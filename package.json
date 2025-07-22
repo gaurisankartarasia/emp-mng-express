@@ -1,0 +1,27 @@
+{
+  "name": "sr-exp-mod",
+  "version": "1.0.0",
+  "main": "src/gateway.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/gateway.js",
+    "dev": "nodemon src/gateway.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "mysql2": "^3.14.2",
+    "nodemon": "^3.1.10",
+    "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3",
+    "sharp": "^0.34.3"
+  }
+}
