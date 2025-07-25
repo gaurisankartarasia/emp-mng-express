@@ -16,9 +16,20 @@ const getIncrementPercentage = (rating) => {
     }
 };
 
+
+
+
 // export const getIncrementReport = async (req, res) => {
 //     try {
+//         const { search } = req.query; 
+//         const whereClause = {};
+
+//         if (search) {
+//             whereClause.name = { [Op.like]: `%${search}%` }; 
+//         }
+
 //         const employeesData = await Employee.findAll({
+//             where: whereClause, 
 //             attributes: [
 //                 'id',
 //                 'name',
@@ -29,12 +40,13 @@ const getIncrementPercentage = (rating) => {
 //             ],
 //             include: [{
 //                 model: Task,
-//                 attributes: [], // We only need tasks for the AVG calculation
+//                 attributes: [],
 //                 where: { status: 'completed' },
-//                 required: false // Use LEFT JOIN to include employees with no completed tasks
+//                 required: false
 //             }],
 //             group: ['Employee.id'],
-//             raw: true // Get plain JSON objects
+//             raw: true,
+//             order: [['name', 'ASC']]
 //         });
 
 //         const report = employeesData.map(emp => {
@@ -57,55 +69,59 @@ const getIncrementPercentage = (rating) => {
 //         console.error('Error generating increment report:', error);
 //         res.status(500).json({ message: 'Error generating increment report', error: error.message });
 //     }
-// }
+// };
 
 
 export const getIncrementReport = async (req, res) => {
     try {
-        const { search } = req.query; // <-- Get search term
+        const { search, page = 1, pageSize = 10, sortBy = 'average_rating', sortOrder = 'ASC' } = req.query;
+
+        const limit = parseInt(pageSize, 10);
+        const offset = (parseInt(page, 10) - 1) * limit;
         const whereClause = {};
 
         if (search) {
-            whereClause.name = { [Op.like]: `%${search}%` }; // <-- Add search condition
+            whereClause.name = { [Op.like]: `%${search}%` };
         }
 
-        const employeesData = await Employee.findAll({
-            where: whereClause, // <-- Apply the where clause
+        const { count, rows } = await Employee.findAndCountAll({
+            where: whereClause,
             attributes: [
-                'id',
-                'name',
-                'current_salary',
-                'joined_at',
+                'id', 'name', 'current_salary', 'joined_at',
                 [sequelize.fn('DATEDIFF', sequelize.fn('NOW'), sequelize.col('joined_at')), 'days_of_service'],
                 [sequelize.fn('AVG', sequelize.col('Tasks.completion_rating')), 'average_rating']
             ],
-            include: [{
-                model: Task,
-                attributes: [],
-                where: { status: 'completed' },
-                required: false
-            }],
+            include: [{ model: Task, attributes: [], where: { status: 'completed' }, required: false }],
             group: ['Employee.id'],
-            raw: true,
-            order: [['name', 'ASC']]
+            limit: limit,
+            offset: offset,
+            order: [[sortBy, sortOrder]],
+            subQuery: false 
         });
 
-        const report = employeesData.map(emp => {
-            const isEligible = emp.days_of_service >= 180;
-            const incrementPercentage = isEligible ? getIncrementPercentage(emp.average_rating) : 0;
-            const currentSalary = parseFloat(emp.current_salary || 0);
+        const totalItems = count.length;
+        const report = rows.map(emp => {
+            const rawEmp = emp.get({ plain: true });
+            const isEligible = rawEmp.days_of_service >= 180;
+            const incrementPercentage = isEligible ? getIncrementPercentage(rawEmp.average_rating) : 0;
+            const currentSalary = parseFloat(rawEmp.current_salary || 0);
             const newSalary = currentSalary * (1 + (incrementPercentage / 100));
 
             return {
-                ...emp,
-                average_rating: emp.average_rating ? parseFloat(emp.average_rating).toFixed(2) : null,
+                ...rawEmp,
+                average_rating: rawEmp.average_rating ? parseFloat(rawEmp.average_rating).toFixed(2) : null,
                 is_eligible: isEligible,
                 increment_percentage: incrementPercentage.toFixed(2),
                 new_salary: newSalary.toFixed(2)
             };
         });
 
-        res.status(200).json(report);
+        res.status(200).json({
+            data: report,
+            totalPages: Math.ceil(totalItems / limit),
+            totalItems: totalItems
+        });
+
     } catch (error) {
         console.error('Error generating increment report:', error);
         res.status(500).json({ message: 'Error generating increment report', error: error.message });

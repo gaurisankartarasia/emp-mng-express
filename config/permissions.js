@@ -17,4 +17,7 @@ export const PERMISSIONS = {
   INCREMENT_REPORT: {
     READ: "page-increment-report",
   },
+
+ VIEW_ALL_PERFORMANCE_CHART:"dashboard-view-all-performance"
+
 };

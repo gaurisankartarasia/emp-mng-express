@@ -33,7 +33,6 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    // --- Fetch Permissions using Sequelize's association method ---
     let permissions = [];
     if (!employee.is_master) {
       const employeePermissions = await employee.getPermissions({
@@ -47,14 +46,14 @@ export const login = async (req, res) => {
       userId: employee.id,
       name: employee.name,
       is_master: !!employee.is_master,
-      permissions: permissions
+      permissions: permissions,
+      picture: employee.picture
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '1d'
     });
 
-    // Update the last_login timestamp
     employee.last_login = new Date();
     await employee.save();
 
@@ -66,7 +65,8 @@ export const login = async (req, res) => {
         name: employee.name,
         email: employee.email,
         is_master: employee.is_master,
-        permissions: permissions
+        permissions: permissions,
+        picture: employee.picture
       }
     });
 
@@ -74,4 +74,40 @@ export const login = async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during authentication.' });
   }
+};
+
+
+
+export const activateAccount = async (req, res) => {
+    const { token, password } = req.body;
+    if (!token || !password || password.length < 6) {
+        return res.status(400).json({ message: 'A valid token and a password of at least 6 characters are required.' });
+    }
+
+    try {
+        const employee = await Employee.findOne({
+            where: {
+                activation_token: token,
+                activation_token_expires_at: { [Op.gt]: new Date() } // Check if token is not expired
+            }
+        });
+
+        if (!employee) {
+            return res.status(400).json({ message: 'Invalid or expired activation link.' });
+        }
+        if (employee.is_active) {
+            return res.status(400).json({ message: 'This account has already been activated.' });
+        }
+
+        employee.password = await bcrypt.hash(password, 10);
+        employee.is_active = true;
+        employee.activation_token = null;
+        employee.activation_token_expires_at = null;
+        await employee.save();
+        
+        res.status(200).json({ message: 'Account activated successfully! You can now log in.' });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server error during account activation.', error: error.message });
+    }
 };

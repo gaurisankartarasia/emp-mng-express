@@ -1,11 +1,10 @@
 import express from 'express';
-import { login } from '../controllers/authController.js';
+import { login, activateAccount } from '../controllers/authController.js';
 
 const router = express.Router();
 
-// @route   POST /api/auth/login
-// @desc    Authenticate employee and get token
-// @access  Public
+
 router.post('/login', login);
+router.post('/activate-account', activateAccount);
 
 export default router;
