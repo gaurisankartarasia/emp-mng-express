@@ -9,8 +9,9 @@ const router = express.Router();
 router.get(
     '/',
     protect,
-    hasPermission([PERMISSIONS.VIEW_INCREMENT_REPORT, PERMISSIONS.INCREMENT_REPORT.READ]),
+    hasPermission([PERMISSIONS.PAGES.INCREMENT_REPORT, PERMISSIONS.INCREMENT_REPORT.READ]),
     getIncrementReport
 );
+
 
 export default router;

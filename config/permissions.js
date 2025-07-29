@@ -3,6 +3,9 @@ export const PERMISSIONS = {
     EMPLOYEE_MANAGEMENT: "page-employee-management",
     INCREMENT_REPORT: "page-increment-report",
     MANAGE_EMPLOYEE_PERMISSIONS: "page-manage-permissions",
+    LEAVE_MANAGEMENT: "page-leave-management", 
+        RULES_MANAGEMENT: "page-rules-management",
+
   },
   EMPLOYEE: {
     READ: "emp-read",
@@ -16,6 +19,10 @@ export const PERMISSIONS = {
   },
   INCREMENT_REPORT: {
     READ: "page-increment-report",
+  },
+    LEAVE_MANAGEMENT: {
+    READ_ALL: "emp-leave-read-all", 
+    UPDATE: "emp-leave-update",    
   },
 
  VIEW_ALL_PERFORMANCE_CHART:"dashboard-view-all-performance"

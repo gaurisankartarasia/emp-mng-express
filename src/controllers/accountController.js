@@ -22,34 +22,7 @@ export const getMyProfile = async (req, res) => {
     }
 };
 
-// --- UPDATE CURRENT USER'S PROFILE INFO ---
-// export const updateMyProfile = async (req, res) => {
-//     const { name, email, phone } = req.body;
-//     try {
-//         const employee = await Employee.findByPk(req.user.userId);
-//         if (!employee) {
-//             return res.status(404).json({ message: 'User profile not found.' });
-//         }
 
-//         if (email && email !== employee.email) {
-//             const existing = await Employee.findOne({ 
-//                 where: { email, id: { [Op.ne]: req.user.userId } } 
-//             });
-//             if (existing) {
-//                 return res.status(409).json({ message: 'Email is already in use by another account.' });
-//             }
-//         }
-        
-//         employee.name = name || employee.name;
-//         employee.email = email || employee.email;
-//         employee.phone = phone || employee.phone;
-//         await employee.save();
-
-//         res.status(200).json({ message: 'Profile updated successfully.' });
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error updating profile.', error: error.message });
-//     }
-// };
 
 
 export const updateMyProfile = async (req, res) => {

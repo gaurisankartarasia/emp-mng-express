@@ -12,6 +12,9 @@ import incrementRoutes from './routes/incrementRoutes.js';
 import permissionRoutes from './routes/permissionRoutes.js';
 import accountRoutes from './routes/accountRoutes.js'
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import policyRoutes from './routes/policyRoutes.js';
+import leaveRoutes from './routes/leaveRoutes.js';
+import rulesRoutes from './routes/rulesRoutes.js'; 
 
 dotenv.config();
 const app = express();
@@ -32,9 +35,12 @@ app.use('/api/increment-report', incrementRoutes);
 app.use('/api/permissions', permissionRoutes);
 app.use('/api/account', accountRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/policy', policyRoutes);
+app.use('/api/leave', leaveRoutes);
+app.use('/api/rules', rulesRoutes);
 
 app.get('/', (req, res) => {
-  res.send('RBAC API with Sequelize is running...');
+  res.send('Running...');
 });
 
 const startServer = async () => {
