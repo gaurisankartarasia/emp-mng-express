@@ -12,7 +12,8 @@ const transporter = nodemailer.createTransport({
 
 export const sendInvitationEmail = async (email, token) => {
     // const activationLink = `http://localhost:5173/activate-account?token=${token}`;
-        const activationLink = `http://10.20.124.221:5173/activate-account?token=${token}`;
+        // const activationLink = `http://10.20.124.221:5173/activate-account?token=${token}`;
+    const activationLink = `https://emp-mng-react.vercel.app/activate-account?token=${token}`;
 
     
     // http://10.20.124.221:5173/
