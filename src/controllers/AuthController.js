@@ -1,3 +1,5 @@
+
+
 import { models } from '../models/index.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -45,6 +47,7 @@ export const login = async (req, res) => {
     const payload = {
       userId: employee.id,
       name: employee.name,
+       email: employee.email,
       is_master: !!employee.is_master,
       permissions: permissions,
       picture: employee.picture
@@ -57,9 +60,17 @@ export const login = async (req, res) => {
     employee.last_login = new Date();
     await employee.save();
 
+
+     res.cookie('token', token, {
+        httpOnly: true, 
+        secure: process.env.NODE_ENV === 'production', 
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000 
+    });
+
     res.status(200).json({
       message: 'Login successful!',
-      token,
+      // token,
       employee: {
         id: employee.id,
         name: employee.name,
@@ -75,6 +86,17 @@ export const login = async (req, res) => {
     res.status(500).json({ message: 'Server error during authentication.' });
   }
 };
+
+
+export const logout = (req, res) => {
+    // Clear the cookie
+    res.cookie('token', '', {
+        httpOnly: true,
+        expires: new Date(0) // Set expiration to the past
+    });
+    res.status(200).json({ message: 'Logout successful.' });
+};
+
 
 
 
@@ -110,4 +132,48 @@ export const activateAccount = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Server error during account activation.', error: error.message });
     }
+};
+
+
+
+export const getCurrentUser = async (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const employee = await Employee.findByPk(decoded.userId, {
+      attributes: ['id', 'name', 'email', 'is_master', 'picture'],
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    let permissions = [];
+    if (!employee.is_master) {
+      const employeePermissions = await employee.getPermissions({
+        attributes: ['code_name'],
+        raw: true,
+      });
+      permissions = employeePermissions.map(p => p.code_name);
+    }
+
+    res.status(200).json({
+      employee: {
+        id: employee.id,
+        name: employee.name,
+        email: employee.email,
+        is_master: employee.is_master,
+        permissions,
+        picture: employee.picture,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(401).json({ message: 'Invalid token.' });
+  }
 };

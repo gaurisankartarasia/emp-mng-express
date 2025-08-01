@@ -21,10 +21,7 @@ export default (sequelize) => {
       allowNull: false,
       defaultValue: false
     },
-    annual_allowance_days: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
+ 
     monthly_allowance_days: {
       type: DataTypes.INTEGER,
       allowNull: true
@@ -33,11 +30,7 @@ export default (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    allow_retroactive_application: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    },
+   
     fallback_leave_type_id: {
       type: DataTypes.INTEGER,
       allowNull: true

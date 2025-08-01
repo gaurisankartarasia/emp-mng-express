@@ -27,7 +27,7 @@
 
 
 import express from 'express';
-import { protect, hasPermission } from '../middleware/authMiddleware.js';
+import { protect, hasPermission } from '../middleware/AuthMiddleware.js';
 import { PERMISSIONS } from '../../config/permissions.js';
 import {
     // We will REMOVE the old createLeaveRequest from this list
@@ -40,7 +40,7 @@ import {
     createSplitLeaveRequest,
 
     getCalendarData
-} from '../controllers/leaveController.js';
+} from '../controllers/LeaveController.js';
 
 const router = express.Router();
 

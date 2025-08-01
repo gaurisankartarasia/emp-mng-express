@@ -1,12 +1,12 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
-import { upload, processAndSaveImage } from "../middleware/uploadMiddleware.js";
+import { protect } from "../middleware/AuthMiddleware.js";
+import { upload, processAndSaveImage } from "../middleware/UploadMiddleware.js";
 
 import {
   getMyProfile,
   updateMyProfile,
   changeMyPassword,
-} from "../controllers/accountController.js";
+} from "../controllers/AccountController.js";
 
 const router = express.Router();
 

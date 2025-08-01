@@ -4,17 +4,18 @@ import cors from 'cors';
 import { sequelize } from './models/index.js'; 
 import { fileURLToPath } from 'url';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 
-import authRoutes from './routes/authRoutes.js';
-import employeeRoutes from './routes/employeeRoutes.js';
-import taskRoutes from './routes/taskRoutes.js';
-import incrementRoutes from './routes/incrementRoutes.js';
-import permissionRoutes from './routes/permissionRoutes.js';
-import accountRoutes from './routes/accountRoutes.js'
-import dashboardRoutes from './routes/dashboardRoutes.js';
-import policyRoutes from './routes/policyRoutes.js';
-import leaveRoutes from './routes/leaveRoutes.js';
-import rulesRoutes from './routes/rulesRoutes.js'; 
+import authRoutes from './routes/AuthRoutes.js';
+import employeeRoutes from './routes/EmployeeRoutes.js';
+import taskRoutes from './routes/TaskRoutes.js';
+import incrementRoutes from './routes/IncrementRoutes.js';
+import permissionRoutes from './routes/PermissionRoutes.js';
+import accountRoutes from './routes/AccountRoutes.js'
+import dashboardRoutes from './routes/DashboardRoutes.js';
+import policyRoutes from './routes/PolicyRoutes.js';
+import leaveRoutes from './routes/LeaveRoutes.js';
+import rulesRoutes from './routes/RulesRoutes.js'; 
 
 dotenv.config();
 const app = express();
@@ -23,21 +24,25 @@ const PORT = process.env.PORT || 3001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173', 
+    credentials: true   
+}));
+app.use(cookieParser());
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, '../public')));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/employees', employeeRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/increment-report', incrementRoutes);
-app.use('/api/permissions', permissionRoutes);
-app.use('/api/account', accountRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/policy', policyRoutes);
-app.use('/api/leave', leaveRoutes);
-app.use('/api/rules', rulesRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/employees', employeeRoutes);
+app.use('/api/v1/tasks', taskRoutes);
+app.use('/api/v1/increment-report', incrementRoutes);
+app.use('/api/v1/permissions', permissionRoutes);
+app.use('/api/v1/account', accountRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/policy', policyRoutes);
+app.use('/api/v1/leave', leaveRoutes);
+app.use('/api/v1/rules', rulesRoutes);
 
 app.get('/', (req, res) => {
   res.send('Running...');

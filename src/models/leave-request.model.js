@@ -39,6 +39,11 @@ export default (sequelize) => {
       type: DataTypes.STRING(36),
       allowNull: true
     },
+     days: { 
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
     created_by_admin_id: {
       type: DataTypes.INTEGER,
       allowNull: true

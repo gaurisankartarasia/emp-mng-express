@@ -1,6 +1,6 @@
 import express from "express";
-import { protect, hasPermission } from "../middleware/authMiddleware.js";
-import { getDashboardSummary, getPerformanceCharts } from "../controllers/dashboardController.js";
+import { protect, hasPermission } from "../middleware/AuthMiddleware.js";
+import { getDashboardSummary, getPerformanceCharts } from "../controllers/DashboardController.js";
 import { PERMISSIONS } from "../../config/permissions.js";
 
 

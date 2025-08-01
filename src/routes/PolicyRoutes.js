@@ -1,7 +1,7 @@
 import express from 'express';
-import { protect, hasPermission } from '../middleware/authMiddleware.js';
+import { protect, hasPermission } from '../middleware/AuthMiddleware.js';
 import { PERMISSIONS } from '../../config/permissions.js';
-import { getIncrementScheme } from '../controllers/incrementController.js';
+import { getIncrementScheme } from '../controllers/IncrementController.js';
 
 const router = express.Router();
 

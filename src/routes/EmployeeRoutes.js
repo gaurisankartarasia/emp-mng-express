@@ -58,10 +58,10 @@ import {
   updateEmployee,
   getEmployeeById,
   getManageableEmployees,
-} from "../controllers/employeeController.js";
-import { protect, hasPermission } from "../middleware/authMiddleware.js";
+} from "../controllers/EmployeeController.js";
+import { protect, hasPermission } from "../middleware/AuthMiddleware.js";
 import { PERMISSIONS } from "../../config/permissions.js";
-import { upload, processAndSaveImage } from "../middleware/uploadMiddleware.js";
+import { upload, processAndSaveImage } from "../middleware/UploadMiddleware.js";
 
 const router = express.Router();
 

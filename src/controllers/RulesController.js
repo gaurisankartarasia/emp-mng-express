@@ -1,5 +1,9 @@
 import { models, sequelize } from '../models/index.js';
-const { LeaveType, CompanyRule } = models;
+const { LeaveType, CompanyRule, PublicHoliday } = models;
+
+
+
+
 
 // --- Leave Type Controllers ---
 
@@ -83,3 +87,4 @@ export const updateCompanyRules = async (req, res) => {
         res.status(500).json({ message: 'Error updating company rules', error: error.message });
     }
 };
+
