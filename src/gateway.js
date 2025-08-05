@@ -26,7 +26,7 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors({
     // origin: 'http://localhost:5173', 
-        origin: 'https://emp-mng-react.vercel.app', 
+        origin: process.env.CORS_ORIGIN, 
 
     credentials: true   
 }));

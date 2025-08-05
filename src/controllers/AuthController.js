@@ -35,6 +35,10 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
+    if(employee.is_active === false ){
+      return res.status(400).json({message:"Account inactive"})
+    }
+
     let permissions = [];
     if (!employee.is_master) {
       const employeePermissions = await employee.getPermissions({
@@ -47,10 +51,11 @@ export const login = async (req, res) => {
     const payload = {
       userId: employee.id,
       name: employee.name,
-       email: employee.email,
+      email: employee.email,
       is_master: !!employee.is_master,
       permissions: permissions,
-      picture: employee.picture
+      picture: employee.picture,
+      last_login : employee.last_login
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -77,7 +82,8 @@ export const login = async (req, res) => {
         email: employee.email,
         is_master: employee.is_master,
         permissions: permissions,
-        picture: employee.picture
+        picture: employee.picture,
+          last_login : employee.last_login
       }
     });
 
@@ -110,7 +116,7 @@ export const activateAccount = async (req, res) => {
         const employee = await Employee.findOne({
             where: {
                 activation_token: token,
-                activation_token_expires_at: { [Op.gt]: new Date() } // Check if token is not expired
+                activation_token_expires_at: { [Op.gt]: new Date() } 
             }
         });
 
@@ -137,6 +143,7 @@ export const activateAccount = async (req, res) => {
 
 
 export const getCurrentUser = async (req, res) => {
+  
   const token = req.cookies.token;
 
   if (!token) {
@@ -146,7 +153,7 @@ export const getCurrentUser = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const employee = await Employee.findByPk(decoded.userId, {
-      attributes: ['id', 'name', 'email', 'is_master', 'picture'],
+      attributes: ['id', 'name', 'email', 'is_master', 'picture', 'last_login'],
     });
 
     if (!employee) {
@@ -170,6 +177,7 @@ export const getCurrentUser = async (req, res) => {
         is_master: employee.is_master,
         permissions,
         picture: employee.picture,
+        last_login: employee.last_login
       },
     });
   } catch (error) {
