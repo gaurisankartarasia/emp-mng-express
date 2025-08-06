@@ -16,6 +16,8 @@ import dashboardRoutes from './routes/DashboardRoutes.js';
 import policyRoutes from './routes/PolicyRoutes.js';
 import leaveRoutes from './routes/LeaveRoutes.js';
 import rulesRoutes from './routes/RulesRoutes.js'; 
+import attendanceRoutes from './routes/AttendanceRoutes.js';
+import payrollRoutes from './routes/PayrollRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -45,6 +47,8 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/policy', policyRoutes);
 app.use('/api/v1/leave', leaveRoutes);
 app.use('/api/v1/rules', rulesRoutes);
+app.use('/api/v1/attendance', attendanceRoutes);
+app.use('/api/v1/payroll', payrollRoutes);
 
 app.get('/', (req, res) => {
   res.send('Running...');
@@ -57,7 +61,7 @@ const startServer = async () => {
     
 
     // await sequelize.sync({ alter: true });
-    console.log('sync success');
+    // console.log('sync success');
 
     app.listen(PORT, () => {
       console.log(`bluetooth connected on ${PORT}`);

@@ -1,5 +1,3 @@
-
-
 import { models } from '../models/index.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -24,6 +22,7 @@ export const login = async (req, res) => {
         ]
       }
     });
+
 
     if (!employee) {
       return res.status(401).json({ message: 'Invalid credentials.' });
@@ -75,7 +74,6 @@ export const login = async (req, res) => {
 
     res.status(200).json({
       message: 'Login successful!',
-      // token,
       employee: {
         id: employee.id,
         name: employee.name,
@@ -95,10 +93,9 @@ export const login = async (req, res) => {
 
 
 export const logout = (req, res) => {
-    // Clear the cookie
     res.cookie('token', '', {
         httpOnly: true,
-        expires: new Date(0) // Set expiration to the past
+        expires: new Date(0)
     });
     res.status(200).json({ message: 'Logout successful.' });
 };

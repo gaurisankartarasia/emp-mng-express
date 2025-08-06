@@ -5,7 +5,7 @@ export const PERMISSIONS = {
     MANAGE_EMPLOYEE_PERMISSIONS: "page-manage-permissions",
     LEAVE_MANAGEMENT: "page-leave-management",
     RULES_MANAGEMENT: "page-rules-management",
-    VIEW_RULES: "page-view-rules",
+    PAYROLL_MANAGEMENT: "page-payroll-management"
   },
   EMPLOYEE: {
     READ: "emp-read",
@@ -33,4 +33,8 @@ export const PERMISSIONS = {
   },
 
   VIEW_ALL_PERFORMANCE_CHART: "dashboard-view-all-performance",
+
+   PAYROLL: {
+    CALCULATE_SALARY: "payroll-calculate",
+  },
 };
