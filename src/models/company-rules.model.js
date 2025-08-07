@@ -2,11 +2,11 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
   sequelize.define('CompanyRule', {
-    setting_key: {
+    rule_key: {
       type: DataTypes.STRING(50),
       primaryKey: true
     },
-    setting_value: {
+    rule_value: {
       type: DataTypes.STRING(255),
       allowNull: false
     },

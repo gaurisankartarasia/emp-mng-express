@@ -1,8 +1,7 @@
 import { models } from '../models/index.js';
 const { Attendance } = models;
 
-// const getCurrentDate = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-// const getCurrentTime = () => new Date().toTimeString().split(' ')[0]; // HH:MM:SS
+
 const getCurrentDate = () => new Date().toISOString().split('T')[0];
 
 

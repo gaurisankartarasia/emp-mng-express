@@ -6,11 +6,7 @@ import fs from "fs";
 import { randomBytes } from 'crypto'; 
 import { sendInvitationEmail } from '../utils/emailService.js'; 
 
-
-
 const Employee = sequelize.models.Employee;
-
-
 
 export const createEmployee = async (req, res) => {
   try {
@@ -68,45 +64,6 @@ export const createEmployee = async (req, res) => {
     res.status(500).json({ message: "Server error while creating invitation." });
   }
 };
-
-
-// export const getEmployees = async (req, res) => {
-//   try {
-//     const { search } = req.query;
-//     const whereClause = {};
-
-//     if (search) {
-//       whereClause[Op.or] = [
-//         { id: { [Op.like]: `%${search}%` } },
-//         { name: { [Op.like]: `%${search}%` } },
-//         { email: { [Op.like]: `%${search}%` } },
-//         { phone: { [Op.like]: `%${search}%` } },
-//       ];
-//     }
-
-//     const employees = await Employee.findAll({
-//       where: whereClause,
-//       attributes: [
-//         "id",
-//         "name",
-//         "email",
-//         "phone",
-//         "picture",
-//         "joined_at",
-//         "is_master",
-//         "address",
-//         "current_salary",
-//         "last_login",
-//         "createdAt",
-//         "updatedAt",
-//       ],
-//       order: [["name", "ASC"]],
-//     });
-//     res.status(200).json(employees);
-//   } catch (error) {
-//     res.status(500).json({ message: "Failed to fetch employees." });
-//   }
-// };
 
 
 export const getEmployees = async (req, res) => {
@@ -223,45 +180,6 @@ export const getEmployeeById = async (req, res) => {
   }
 };
 
-
-// export const createEmployee = async (req, res) => {
-//   const { name, email, phone, password, confirmPassword, address, joined_at, current_salary } = req.body;
-
-//   if (!name || !email || !password || !joined_at) {
-//     return res.status(400).json({ message: "Name, email, password, and joining date are required." });
-//   }
-//   if (password !== confirmPassword) {
-//     return res.status(400).json({ message: 'Passwords do not match.' });
-//   }
-//   if (phone && !/^\d{10}$/.test(phone)) {
-//     return res.status(400).json({ message: 'Phone number must be exactly 10 digits.' });
-//   }
-
-//   try {
-//     const existingEmployee = await Employee.findOne({ where: { email } });
-//     if (existingEmployee) {
-//       return res.status(409).json({ message: "Employee with this email already exists." });
-//     }
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const newEmployee = await Employee.create({
-//       name,
-//       email,
-//       phone,
-//       address,
-//       joined_at,
-//       current_salary,
-//       password: hashedPassword,
-//       picture: req.file?.path || null,
-//     });
-//     const employeeData = newEmployee.toJSON();
-//     delete employeeData.password;
-//     delete employeeData.is_master;
-//     res.status(201).json(employeeData);
-//   } catch (error) {
-//     console.error("Error creating employee:", error);
-//     res.status(500).json({ message: "Server error while creating employee." });
-//   }
-// };
 
 export const updateEmployee = async (req, res) => {
   const { id } = req.params;

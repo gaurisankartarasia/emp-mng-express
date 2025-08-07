@@ -1,11 +1,7 @@
 import { models, sequelize } from '../models/index.js';
-const { LeaveType, CompanyRule, PublicHoliday } = models;
+const { LeaveType, CompanyRule } = models;
 
 
-
-
-
-// --- Leave Type Controllers ---
 
 export const getLeaveTypes = async (req, res) => {
     try {
@@ -57,7 +53,6 @@ export const deleteLeaveType = async (req, res) => {
 };
 
 
-// --- Company Rule Controllers ---
 
 export const getCompanyRules = async (req, res) => {
     try {
@@ -69,14 +64,14 @@ export const getCompanyRules = async (req, res) => {
 };
 
 export const updateCompanyRules = async (req, res) => {
-    const rulesToUpdate = req.body; // Expecting an array of { setting_key, setting_value }
+    const rulesToUpdate = req.body;
     const t = await sequelize.transaction();
     try {
         await Promise.all(
             rulesToUpdate.map(rule =>
                 CompanyRule.update(
-                    { setting_value: rule.setting_value },
-                    { where: { setting_key: rule.setting_key }, transaction: t }
+                    { rule_value: rule.rule_value },
+                    { where: { rule_key: rule.rule_key }, transaction: t }
                 )
             )
         );

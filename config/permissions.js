@@ -34,7 +34,8 @@ export const PERMISSIONS = {
 
   VIEW_ALL_PERFORMANCE_CHART: "dashboard-view-all-performance",
 
-   PAYROLL: {
+  PAYROLL: {
     CALCULATE_SALARY: "payroll-calculate",
+    GENERATE_REPORT: "payroll-generate-report",
   },
 };

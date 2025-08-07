@@ -8,7 +8,6 @@ const { LeaveRequest, LeaveType, Employee, CompanyRule } = models;
 
 
 
-// Helper to calculate calendar days between two dates, inclusively and safely in UTC.
 const calculateCalendarDays = (start, end) => {
     if (!start || !end) return 0;
     const startDate = new Date(start);
@@ -21,7 +20,6 @@ const calculateCalendarDays = (start, end) => {
     return diffDays;
 };
 
-// Helper to add calendar days to a start date, safely in UTC.
 const addCalendarDays = (date, days) => {
     const result = new Date(date);
     result.setUTCHours(0, 0, 0, 0);
@@ -29,13 +27,11 @@ const addCalendarDays = (date, days) => {
     return result;
 };
 
-// Helper to format a Date object into a 'YYYY-MM-DD' string.
 const toYYYYMMDD = (date) => {
     if (!date) return null;
     return date.toISOString().split('T')[0];
 };
 
-// Helper to get start and end of month for a given date
 const getMonthBounds = (date) => {
     const d = new Date(date);
     const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -85,7 +81,6 @@ export const validateLeaveRequest = async (req, res) => {
 
         const requestedDays = calculateCalendarDays(start_date, end_date);
         
-        // --- Hard Stop Check #1: Max Days Per Request ---
         if (rules.max_days_per_request && requestedDays > rules.max_days_per_request) {
             return res.status(400).json({
                 message: `Request for ${requestedDays} days failed. You cannot request more than ${rules.max_days_per_request} days for this leave type at once.`
@@ -96,14 +91,11 @@ export const validateLeaveRequest = async (req, res) => {
         const startOfYear = new Date(now.getFullYear(), 0, 1);
         const endOfYear = new Date(now.getFullYear(), 11, 31);
 
-        // --- FIXED: Monthly Balance Calculation ---
         let remainingMonthlyBalance = Infinity;
         if (rules.monthly_allowance_days) {
-            // Get the month of the START of the requested leave
             const requestStartDate = new Date(start_date);
             const { startOfMonth, endOfMonth } = getMonthBounds(requestStartDate);
             
-            // Find all leaves that overlap with this month
             const leavesAffectingThisMonth = await LeaveRequest.findAll({
                 where: {
                     employee_id: userId,
@@ -116,7 +108,6 @@ export const validateLeaveRequest = async (req, res) => {
             
             let alreadyTakenThisMonth = 0;
             leavesAffectingThisMonth.forEach(leave => {
-                // Calculate overlap between leave and the month
                 const leaveStart = new Date(leave.start_date);
                 const leaveEnd = new Date(leave.end_date);
                 leaveStart.setUTCHours(0, 0, 0, 0);
@@ -130,7 +121,6 @@ export const validateLeaveRequest = async (req, res) => {
                 }
             });
             
-            // Calculate how many days of the NEW request fall in this month
             const newRequestStart = new Date(start_date);
             const newRequestEnd = new Date(end_date);
             newRequestStart.setUTCHours(0, 0, 0, 0);
@@ -146,22 +136,20 @@ export const validateLeaveRequest = async (req, res) => {
             
             remainingMonthlyBalance = rules.monthly_allowance_days - alreadyTakenThisMonth;
             
-            // For the comparison later, we need to check against days requested in this month
-            // If the request spans multiple months, we need more complex logic
+    
             if (daysInThisMonth > remainingMonthlyBalance) {
-                remainingMonthlyBalance = remainingMonthlyBalance; // This will trigger the split logic
+                remainingMonthlyBalance = remainingMonthlyBalance; 
             } else if (daysInThisMonth < requestedDays) {
-                // Request spans multiple months - for now, use the most restrictive month
-                // You might want to add more sophisticated multi-month handling here
+              
                 remainingMonthlyBalance = remainingMonthlyBalance;
             }
         }
 
         let remainingAnnualCapBalance = Infinity;
         if (!rules.is_unpaid) {
-            const totalCapRule = await CompanyRule.findOne({ where: { setting_key: 'total_annual_leave_cap' } });
+            const totalCapRule = await CompanyRule.findOne({ where: { rule_key: 'total_annual_leave_cap' } });
             if (totalCapRule) {
-                const totalAnnualCap = Number(totalCapRule.setting_value);
+                const totalAnnualCap = Number(totalCapRule.rule_value);
                 const allPaidLeaves = await LeaveRequest.findAll({
                     where: { 
                         employee_id: userId, 
@@ -187,11 +175,9 @@ export const validateLeaveRequest = async (req, res) => {
             }
         }
         
-        // Step 3: Determine the True Available Balance (the most restrictive rule)
         const trulyAvailableDays = Math.min(remainingMonthlyBalance, remainingAnnualCapBalance);
         const limitingFactor = remainingMonthlyBalance < remainingAnnualCapBalance ? 'monthly_allowance' : 'annual_cap';
 
-        // Step 4: Propose a split if the request exceeds the true available balance.
         if (requestedDays > trulyAvailableDays) {
             const primaryPortionDays = Math.max(0, trulyAvailableDays);
             const secondaryPortionDays = requestedDays - primaryPortionDays;
@@ -222,7 +208,6 @@ export const validateLeaveRequest = async (req, res) => {
             });
         }
         
-        // If all checks pass, the request is valid.
         return res.status(200).json({ status: "ok" });
 
     } catch (error) {
@@ -241,13 +226,11 @@ export const getCalendarData = async (req, res) => {
                 employee_id: userId,
                 status: { [Op.in]: ['pending', 'approved'] }
             },
-            // --- THIS IS THE CRITICAL FIX ---
             include: [{
                 model: LeaveType,
-                as: 'LeaveType', // Ensure this alias matches your model association in models/index.js
-                attributes: ['id', 'name'] // Select only the ID and name
+                as: 'LeaveType', 
+                attributes: ['id', 'name'] 
             }],
-            // We select the main attributes from LeaveRequest as well
             attributes: ['id', 'start_date', 'end_date', 'status', 'reason'] 
         });
 
@@ -290,7 +273,7 @@ try {
 };
 
 export const createSplitLeaveRequest = async (req, res) => {
-    const { primary, secondary } = req.body; // Expecting the two parts of the proposal
+    const { primary, secondary } = req.body; 
     const { userId } = req.user;
     const reason = req.body.reason;
 
@@ -304,7 +287,6 @@ export const createSplitLeaveRequest = async (req, res) => {
     try {
         const requestsToCreate = [];
         
-        // Add the primary (remaining balance) part of the leave
         if (primary.days > 0) {
             requestsToCreate.push({
                 employee_id: userId,
@@ -316,7 +298,6 @@ export const createSplitLeaveRequest = async (req, res) => {
             });
         }
 
-        // Add the secondary (user-chosen) part of the leave
         requestsToCreate.push({
             employee_id: userId,
             leave_type_id: secondary.leave_type_id,
@@ -340,7 +321,6 @@ export const createSplitLeaveRequest = async (req, res) => {
 
 export const getMyLeaveRequests = async (req, res) => {
     const { userId } = req.user;
-    // --- Destructure new query parameters ---
     const { page = 1, pageSize = 10, search = '', status = '', is_unpaid = '', sortBy = 'start_date', sortOrder = 'DESC' } = req.query;
 
     if (!userId) {
@@ -358,20 +338,17 @@ export const getMyLeaveRequests = async (req, res) => {
             attributes: ['name', 'is_unpaid']
         };
 
-        // --- Search Logic ---
         if (search) {
             whereClause[Op.or] = [
-                // Assuming leave request IDs are integers, cast search to a number
                 !isNaN(parseInt(search)) ? { id: parseInt(search) } : null,
                 { reason: { [Op.like]: `%${search}%` } }
-            ].filter(Boolean); // Filter out null if search is not a number
+            ].filter(Boolean);
         }
 
-        // --- Filter Logic ---
         if (status) {
             whereClause.status = status;
         }
-        if (is_unpaid !== '') { // Check for 'true' or 'false' string
+        if (is_unpaid !== '') { 
             includeOptions.where = { is_unpaid: is_unpaid === 'true' };
         }
 
@@ -379,7 +356,6 @@ export const getMyLeaveRequests = async (req, res) => {
         if (sortBy) {
             order.push([sortBy, sortOrder === 'DESC' ? 'DESC' : 'ASC']);
         } else {
-            // Default sort if nothing is provided by the client
             order.push(['start_date', 'DESC']);
         }
         
@@ -459,9 +435,9 @@ export const updateLeaveRequest = async (req, res) => {
             }
 
              if (!request.LeaveType.is_unpaid) {
-                const totalCapRule = await CompanyRule.findOne({ where: { setting_key: 'total_annual_leave_cap' } });
+                const totalCapRule = await CompanyRule.findOne({ where: { rule_key: 'total_annual_leave_cap' } });
                 if (totalCapRule) {
-                    const totalAnnualCap = Number(totalCapRule.setting_value);
+                    const totalAnnualCap = Number(totalCapRule.rule_value);
                     const allPaidLeaves = await LeaveRequest.findAll({
                         where: { employee_id: request.employee_id, status: { [Op.in]: ['approved', 'pending'] }, id: { [Op.ne]: request.id } },
                         include: [{ model: LeaveType, where: { is_unpaid: false } }]
@@ -477,7 +453,6 @@ export const updateLeaveRequest = async (req, res) => {
 
             const t = await sequelize.transaction();
             try {
-                // --- Part 1: Create the REJECTED portion at the beginning (if it exists) ---
                 if (approvedStartDate.getTime() > originalStartDate.getTime()) {
                     const rejectedEndDate = addCalendarDays(approvedStartDate, -1);
                     const rejectedDays = calculateCalendarDays(originalStartDate, rejectedEndDate);
@@ -494,7 +469,6 @@ export const updateLeaveRequest = async (req, res) => {
                     }
                 }
 
-                // --- Part 2: Create the REJECTED portion at the end (if it exists) ---
                 if (approvedEndDate.getTime() < originalEndDate.getTime()) {
                     const rejectedStartDate = addCalendarDays(approvedEndDate, 1);
                     const rejectedDays = calculateCalendarDays(rejectedStartDate, originalEndDate);
@@ -511,7 +485,6 @@ export const updateLeaveRequest = async (req, res) => {
                     }
                 }
 
-                // --- Part 3: Update the original request to become the APPROVED portion ---
                 request.start_date = toYYYYMMDD(approvedStartDate);
                 request.end_date = toYYYYMMDD(approvedEndDate);
                 request.days = calculateCalendarDays(approvedStartDate, approvedEndDate);
@@ -559,16 +532,14 @@ export const getLeaveConfig = async (req, res) => {
             })
         ]);
         
-        const rulesMap = new Map(companyRules.map(rule => [rule.setting_key, rule.setting_value]));
+        const rulesMap = new Map(companyRules.map(rule => [rule.rule_key, rule.rule_value]));
         const totalAnnualCap = Number(rulesMap.get('total_annual_leave_cap')) || 0;
 
         let totalPaidDaysTakenThisYear = 0;
         let totalUnpaidDaysTakenThisYear = 0;
         let totalUnpaidDaysTakenThisMonth = 0;
 
-        // This new balanceDetails will contain ALL per-type calculations
         const balanceDetails = allLeaveTypes.map(lt => {
-            // This is a new per-type property that we didn't have before
             const monthlyAllowance = lt.monthly_allowance_days;
             
             const leavesOfThisType = allApprovedLeaves.filter(al => al.leave_type_id === lt.id);
@@ -582,7 +553,6 @@ export const getLeaveConfig = async (req, res) => {
                 }
             });
 
-            // Add to the correct global accumulators
             if (lt.is_unpaid) {
                 totalUnpaidDaysTakenThisYear += daysTakenThisYear;
             } else {
@@ -593,13 +563,11 @@ export const getLeaveConfig = async (req, res) => {
                 id: lt.id,
                 name: lt.name,
                 is_unpaid: lt.is_unpaid,
-                monthly_allowance: monthlyAllowance, // Add monthly allowance for display
+                monthly_allowance: monthlyAllowance, 
                 taken: daysTakenThisYear,
-                // We don't need per-type annual allowance anymore, so we remove it
             };
         });
         
-        // Calculate monthly unpaid leaves separately for accuracy
         const unpaidLeaveTypeIds = allLeaveTypes.filter(lt => lt.is_unpaid).map(lt => lt.id);
         if (unpaidLeaveTypeIds.length > 0) {
             const unpaidLeavesThisMonth = allApprovedLeaves.filter(al => unpaidLeaveTypeIds.includes(al.leave_type_id));
@@ -612,7 +580,6 @@ export const getLeaveConfig = async (req, res) => {
             });
         }
         
-        // Assemble the final response object
         const annualBalance = {
             allowance: totalAnnualCap,
             taken: totalPaidDaysTakenThisYear,

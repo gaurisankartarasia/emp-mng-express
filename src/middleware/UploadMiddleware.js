@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
 
-const storage = multer.memoryStorage(); // Store image in memory to process it with sharp
+const storage = multer.memoryStorage(); 
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -25,7 +25,6 @@ export const processAndSaveImage = async (req, res, next) => {
         const uploadsDir = 'public/uploads/employees';
         const filepath = path.join(uploadsDir, filename);
 
-        // Ensure the directory exists
         fs.mkdirSync(uploadsDir, { recursive: true });
 
         await sharp(req.file.buffer)
@@ -37,10 +36,8 @@ export const processAndSaveImage = async (req, res, next) => {
             .jpeg({ quality: 90 })
             .toFile(filepath);
 
-        // Store the relative path to be saved in the database
         req.file.path = `/uploads/employees/${filename}`;
         
-        // If updating, delete the old picture
         if (req.body.oldPicturePath) {
             const oldPath = path.join('public', req.body.oldPicturePath);
             if (fs.existsSync(oldPath)) {

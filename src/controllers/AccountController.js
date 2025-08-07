@@ -7,7 +7,6 @@ import fs from 'fs'
 
 const Employee = sequelize.models.Employee;
 
-// --- GET CURRENT USER'S PROFILE ---
 export const getMyProfile = async (req, res) => {
     try {
         const employee = await Employee.findByPk(req.user.userId, {
@@ -72,7 +71,6 @@ export const updateMyProfile = async (req, res) => {
 };
 
 
-// --- CHANGE CURRENT USER'S PASSWORD ---
 export const changeMyPassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     if (!oldPassword || !newPassword || newPassword.length < 6) {

@@ -5,48 +5,6 @@ import { Op } from 'sequelize';
 
 
 
-// export const getTasks = async (req, res) => {
-//   const { is_master, userId } = req.user;
-//   const { search } = req.query; 
-
-//   try {
-//     const whereClause = {};
-//     const includeOptions = {
-//       model: Employee,
-//       attributes: ['name']
-//     };
-
-//     if (is_master) {
-//       if (search) {
-//         whereClause[Op.or] = [
-//            { id: { [Op.like]: `%${search}%` } },
-//           { title: { [Op.like]: `%${search}%` } },
-//           { description: { [Op.like]: `%${search}%` } },
-//           { '$Employee.name$': { [Op.like]: `%${search}%` }, '$Employee.id$': { [Op.like]: `%${search}%` } } 
-//         ]; 
-//       }
-//     } else {
-//       whereClause.EmployeeId = userId;
-//       if (search) {
-//         whereClause[Op.or] = [
-//            { id: { [Op.like]: `%${search}%` } },
-//           { title: { [Op.like]: `%${search}%` } },
-//           { description: { [Op.like]: `%${search}%` } }
-//         ];
-//       }
-//     }
-
-//     const tasks = await Task.findAll({
-//       where: whereClause,
-//       include: includeOptions,
-//       order: [['createdAt', 'DESC']]
-//     });
-//     res.status(200).json(tasks);
-//   } catch (error) {
-//     console.error("Error fetching tasks:", error);
-//     res.status(500).json({ message: 'Error fetching tasks', error: error.message });
-//   }
-// };
 
 export const getTasks = async (req, res) => {
   const { is_master, userId } = req.user;

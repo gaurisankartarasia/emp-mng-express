@@ -6,8 +6,9 @@ import defineIncrementSchemeModel from './incrementScheme.model.js';
 import defineLeaveTypeModel from './leave-type.model.js';
 import defineLeaveRequestModel from './leave-request.model.js';
 import defineCompanyRuleModel from './company-rules.model.js';
-// import definePublicHolidayModel from './public-holiday.model.js';
 import defineAttendanceModel from './attendance.model.js';
+import definePayrollReportModel from './payroll-report.model.js';
+import defineSalarySlipModel from './salary-slip.model.js';
 
 defineEmployeeModel(sequelize);
 definePermissionModel(sequelize);
@@ -17,9 +18,10 @@ defineLeaveTypeModel(sequelize);
 defineLeaveRequestModel(sequelize);  
 defineCompanyRuleModel(sequelize); 
 defineAttendanceModel(sequelize);
-// definePublicHolidayModel(sequelize);
+definePayrollReportModel(sequelize);
+defineSalarySlipModel(sequelize);
 
-const { Employee, Permission, Task, LeaveType, LeaveRequest, Attendance  } = sequelize.models;
+const { Employee, Permission, Task, LeaveType, LeaveRequest, Attendance, PayrollReport, SalarySlip  } = sequelize.models;
 
 Employee.belongsToMany(Permission, { through: 'employee_permissions' });
 Permission.belongsToMany(Employee, { through: 'employee_permissions' });
@@ -48,6 +50,12 @@ LeaveType.belongsTo(LeaveType, {
 
 Employee.hasMany(Attendance, { foreignKey: 'employee_id' });
 Attendance.belongsTo(Employee, { foreignKey: 'employee_id' });
+
+PayrollReport.hasMany(SalarySlip, { foreignKey: 'report_id' });
+SalarySlip.belongsTo(PayrollReport, { foreignKey: 'report_id' });
+
+Employee.hasMany(PayrollReport, { foreignKey: 'generated_by_id' });
+PayrollReport.belongsTo(Employee, { foreignKey: 'generated_by_id' });
 
 console.log('Models and Associations defined');
 

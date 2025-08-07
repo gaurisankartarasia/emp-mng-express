@@ -37,10 +37,8 @@ export const hasPermission = (requiredPermissions) => {
 
     const userPermissions = new Set(user.permissions || []);
     
-    // Ensure requiredPermissions is an array
     const permissionsToCheck = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
 
-    // Check if the user has ALL of the required permissions
     const hasAllPermissions = permissionsToCheck.every(p => userPermissions.has(p));
 
     if (hasAllPermissions) {
