@@ -1,7 +1,9 @@
 import { models } from '../models/index.js';
 import { Op } from 'sequelize';
+import { calculateSalaryBreakdown } from './SalaryController.js';
 
 const { Employee, Attendance, LeaveRequest, LeaveType, PayrollReport, SalarySlip } = models;
+
 
 const runPayrollGeneration = async (reportId, month, year) => {
     console.log(`Starting payroll generation for report ID: ${reportId} (${month}/${year})`);
@@ -12,39 +14,24 @@ const runPayrollGeneration = async (reportId, month, year) => {
         const totalDaysInMonth = endDate.getUTCDate();
 
         const [activeEmployees, allAttendanceForMonth, allApprovedLeavesForMonth] = await Promise.all([
-            Employee.findAll({
-                where: { is_active: true },
-                attributes: ['id', 'name', 'current_salary']
-            }),
-            Attendance.findAll({
-                where: {
-                    date: { [Op.between]: [startDate, endDate] },
-                    check_in_time: { [Op.ne]: null } 
-                }
-            }),
-            LeaveRequest.findAll({
-                where: {
-                    status: 'approved',
-                    start_date: { [Op.lte]: endDate },
-                    end_date: { [Op.gte]: startDate }
-                },
-                include: { model: LeaveType, as: 'LeaveType' }
-            })
+            Employee.findAll({ where: { is_active: true }, attributes: ['id', 'name'] }),
+            Attendance.findAll({ where: { date: { [Op.between]: [startDate, endDate] }, check_in_time: { [Op.ne]: null } } }),
+            LeaveRequest.findAll({ where: { status: 'approved', start_date: { [Op.lte]: endDate }, end_date: { [Op.gte]: startDate } }, include: { model: LeaveType, as: 'LeaveType' } })
         ]);
         
         const salarySlipsToCreate = [];
-
         for (const employee of activeEmployees) {
-            const monthlySalary = parseFloat(employee.current_salary);
-            if (isNaN(monthlySalary) || monthlySalary <= 0) {
-                console.log(`Skipping employee ID ${employee.id} (${employee.name}) due to invalid salary.`);
-                continue; 
+            const salaryBreakdownResult = await calculateSalaryBreakdown(employee.id);
+
+            if (salaryBreakdownResult.error) {
+                console.log(`Skipping employee ID ${employee.id} (${employee.name}): ${salaryBreakdownResult.error}`);
+                continue;
             }
+            const { totalEarnings, totalDeductions } = salaryBreakdownResult.summary;
+            if (totalEarnings <= 0) continue; 
 
             const employeeAttendance = allAttendanceForMonth.filter(a => a.employee_id === employee.id);
             const employeeLeaves = allApprovedLeavesForMonth.filter(l => l.employee_id === employee.id);
-            
-            
             const processedDates = new Set();
             let presentDaysCount = 0;
             let paidLeaveDaysCount = 0;
@@ -56,45 +43,38 @@ const runPayrollGeneration = async (reportId, month, year) => {
                     presentDaysCount++;
                 }
             });
-
             employeeLeaves.forEach(leave => {
                 let currentDate = new Date(leave.start_date);
                 const leaveEndDate = new Date(leave.end_date);
-                
                 while (currentDate <= leaveEndDate) {
                     if (currentDate >= startDate && currentDate <= endDate) {
                         const dateStr = currentDate.toISOString().split('T')[0];
-                        if (!processedDates.has(dateStr)) {
+                        if (!processedDates.has(dateStr) && !leave.LeaveType.is_unpaid) {
                             processedDates.add(dateStr);
-                            if (!leave.LeaveType.is_unpaid) {
-                                paidLeaveDaysCount++;
-                            }
+                            paidLeaveDaysCount++;
                         }
                     }
                     currentDate.setDate(currentDate.getDate() + 1);
                 }
             });
-
             const totalPayableDays = presentDaysCount + paidLeaveDaysCount;
 
-            const perDaySalary = monthlySalary / totalDaysInMonth;
-            const finalSalary = totalPayableDays * perDaySalary;
-            const totalDeductions = monthlySalary - finalSalary;
-            const unpaidDays = totalDaysInMonth - totalPayableDays;
-
+            const actualEarnings = (totalEarnings / totalDaysInMonth) * totalPayableDays;
+            const netSalary = actualEarnings - totalDeductions;
+            
             salarySlipsToCreate.push({
                 report_id: reportId,
                 employee_id: employee.id,
                 employee_name: employee.name,
-                gross_salary: monthlySalary,
-                per_day_salary: perDaySalary,
+                gross_earnings: totalEarnings,
                 total_payable_days: totalPayableDays,
-                deductions: totalDeductions,
-                net_salary: finalSalary,
-                breakdown_data: {
+                total_deductions: totalDeductions,
+                net_salary: netSalary,
+                structure_breakdown: salaryBreakdownResult, 
+                attendance_breakdown: {
                     presentDays: presentDaysCount,
                     paidLeaveDays: paidLeaveDaysCount,
-                    unpaidDays: unpaidDays
+                    unpaidDays: totalDaysInMonth - totalPayableDays
                 }
             });
         }
@@ -107,16 +87,27 @@ const runPayrollGeneration = async (reportId, month, year) => {
             { status: 'completed', generated_at: new Date() },
             { where: { id: reportId } }
         );
-        
         console.log(`Successfully completed payroll generation for report ID: ${reportId}`);
 
     } catch (error) {
-        console.error(`Payroll generation failed for report ID: ${reportId}. Error: ${error.message}`);
-        
+        console.error(`Payroll generation FAILED for report ID: ${reportId}. Error: ${error.message}`);
         await PayrollReport.update(
             { status: 'failed', error_log: error.message },
             { where: { id: reportId } }
         );
+    }
+};
+
+export const getEmployeeList = async (req, res) => {
+    try {
+        const employees = await Employee.findAll({
+            where: { is_active: true },
+            attributes: ['id', 'name'],
+            order: [['name', 'ASC']]
+        });
+        res.status(200).json(employees);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching employee list.', error: error.message });
     }
 };
 

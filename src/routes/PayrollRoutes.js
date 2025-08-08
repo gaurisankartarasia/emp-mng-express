@@ -4,6 +4,7 @@ import { PERMISSIONS } from '../../config/permissions.js';
 import {
    
        initiatePayrollGeneration, 
+       getEmployeeList,
        getReportStatus,
         getPayrollReport,
         getRecentReports } from '../controllers/PayrollController.js';
@@ -11,6 +12,8 @@ import {
 const router = express.Router();
 
 router.use(protect);
+
+router.get('/list-employees', getEmployeeList)
 
 router.post('/initiate', hasPermission(PERMISSIONS.PAYROLL.GENERATE_REPORT), initiatePayrollGeneration);
 router.get('/status/:reportId', hasPermission(PERMISSIONS.PAYROLL.GENERATE_REPORT), getReportStatus);

@@ -9,6 +9,8 @@ import defineCompanyRuleModel from './company-rules.model.js';
 import defineAttendanceModel from './attendance.model.js';
 import definePayrollReportModel from './payroll-report.model.js';
 import defineSalarySlipModel from './salary-slip.model.js';
+import defineSalaryComponentModel from './salary-component.model.js';
+import defineEmployeeSalaryStructureModel from './employee-salary-structure.model.js';
 
 defineEmployeeModel(sequelize);
 definePermissionModel(sequelize);
@@ -20,8 +22,10 @@ defineCompanyRuleModel(sequelize);
 defineAttendanceModel(sequelize);
 definePayrollReportModel(sequelize);
 defineSalarySlipModel(sequelize);
+defineSalaryComponentModel(sequelize);
+defineEmployeeSalaryStructureModel(sequelize);
 
-const { Employee, Permission, Task, LeaveType, LeaveRequest, Attendance, PayrollReport, SalarySlip  } = sequelize.models;
+const { Employee, Permission, Task, LeaveType, LeaveRequest, Attendance, PayrollReport, SalarySlip, SalaryComponent, EmployeeSalaryStructure  } = sequelize.models;
 
 Employee.belongsToMany(Permission, { through: 'employee_permissions' });
 Permission.belongsToMany(Employee, { through: 'employee_permissions' });
@@ -56,6 +60,14 @@ SalarySlip.belongsTo(PayrollReport, { foreignKey: 'report_id' });
 
 Employee.hasMany(PayrollReport, { foreignKey: 'generated_by_id' });
 PayrollReport.belongsTo(Employee, { foreignKey: 'generated_by_id' });
+
+Employee.hasMany(EmployeeSalaryStructure, { foreignKey: 'employee_id' });
+EmployeeSalaryStructure.belongsTo(Employee, { foreignKey: 'employee_id' });
+
+SalaryComponent.hasMany(EmployeeSalaryStructure, { foreignKey: 'component_id' });
+EmployeeSalaryStructure.belongsTo(SalaryComponent, { as: 'component', foreignKey: 'component_id' });
+
+// EmployeeSalaryStructure.belongsTo(SalaryComponent, { as: 'percentageOfComponent', foreignKey: 'percentage_of_component_id' });
 
 console.log('Models and Associations defined');
 

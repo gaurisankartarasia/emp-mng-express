@@ -37,5 +37,14 @@ export const PERMISSIONS = {
   PAYROLL: {
     CALCULATE_SALARY: "payroll-calculate",
     GENERATE_REPORT: "payroll-generate-report",
+    SALARY_COMPONENT:{
+       READ:"read-salary-component",
+       CREATE:"create-salary-component",
+       UPDATE:"update-salary-component",
+       DELETE:"delete-salary-component"
+    },
+    SALARY_STRUCTURE:{
+      UPDATE:"update-salary-structure"
+    }
   },
 };

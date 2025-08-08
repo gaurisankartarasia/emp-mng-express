@@ -18,6 +18,7 @@ import leaveRoutes from './routes/LeaveRoutes.js';
 import rulesRoutes from './routes/RulesRoutes.js'; 
 import attendanceRoutes from './routes/AttendanceRoutes.js';
 import payrollRoutes from './routes/PayrollRoutes.js';
+import salaryRoutes from './routes/SalaryRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/v1/leave', leaveRoutes);
 app.use('/api/v1/rules', rulesRoutes);
 app.use('/api/v1/attendance', attendanceRoutes);
 app.use('/api/v1/payroll', payrollRoutes);
+app.use('/api/v1/salary', salaryRoutes);
 
 app.get('/', (req, res) => {
   res.send('Running...');
